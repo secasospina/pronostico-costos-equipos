@@ -1,4 +1,4 @@
-# Prueba técnica DataKnow – Científico de Datos
+# Pronóstico de costos de equipos a partir de materias primas
 
 ## Descripción del caso
 
