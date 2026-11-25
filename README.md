@@ -2,12 +2,10 @@
 
 ## Descripción del caso
 
-<!-- Escribe aquí, con tus palabras, el resumen del caso. -->
-
 ## Estructura del proyecto
 
 ```
-prueba-tecnica-dataknow/
+pronostico-costos-equipos/
 ├── data/
 │   ├── raw/          # Datos originales, sin modificar
 │   └── processed/    # Datos limpios generados por el código
@@ -22,4 +20,4 @@ prueba-tecnica-dataknow/
 
 ## Cómo ejecutar
 
-<!-- Se completa al final del proyecto. -->
+
