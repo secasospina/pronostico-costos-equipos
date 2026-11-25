@@ -1,0 +1,19 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Variables de entorno y credenciales (API keys del agente, nube, etc.)
+.env
+
+# Sistema operativo
+.DS_Store
+
+# Datos generados (se reconstruyen con el código a partir de data/raw)
+data/processed/*
+!data/processed/.gitkeep
