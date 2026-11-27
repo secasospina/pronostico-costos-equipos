@@ -1,6 +1,9 @@
 from pathlib import Path
 import pandas as pd
 import json
+from urllib.parse import quote_plus
+import feedparser
+import httpx
 
 RUTA_PROYECCION = Path(__file__).resolve().parent.parent / "reports" / "proyeccion_costos_equipos.csv"
 RUTA_MODELO = Path(__file__).resolve().parent.parent / "reports" / "resultados_modelo.json"
@@ -34,3 +37,25 @@ def consultar_modelo(equipo: str) -> str:
     lineas.append(f"R²: {datos['r2']} | Error de validación (MAPE): {datos['mape_validacion']:.2%}")
 
     return "\n".join(lineas)
+
+def buscar_contexto_mercado(tema: str, cantidad: int = 5) -> str:
+    """Busca en Google News las noticias más recientes sobre un tema de mercado
+    (por ejemplo, 'precio del petróleo' o 'materias primas') y devuelve título, medio, fecha y enlace."""
+    url = f"https://news.google.com/rss/search?q={quote_plus(tema)}&hl=es-419&gl=CO&ceid=CO:es-419"
+
+    try:
+        respuesta = httpx.get(url, timeout=10, follow_redirects=True)
+        respuesta.raise_for_status()
+    except httpx.HTTPError as error:
+        return f"No fue posible consultar las noticias en este momento ({error})."
+
+    feed = feedparser.parse(respuesta.content)
+    if not feed.entries:
+        return f"No se encontraron noticias recientes sobre '{tema}'."
+
+    noticias = []
+    for entrada in feed.entries[:cantidad]:
+        medio = entrada.get("source", {}).get("title", "Medio desconocido")
+        noticias.append(f"- {entrada.title} ({medio}, {entrada.get('published', 'sin fecha')})\n  {entrada.link}")
+
+    return f"Noticias recientes sobre '{tema}':\n" + "\n".join(noticias)

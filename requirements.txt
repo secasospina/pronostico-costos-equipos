@@ -25,6 +25,8 @@ defusedxml==0.7.1
 distro==1.9.0
 executing==2.3.0
 fastjsonschema==2.22.3
+feedparser==6.0.14
+feedparser-sgmllib==2.1.0
 fonttools==4.69.1
 formulaic==1.2.2
 fqdn==1.6.0
