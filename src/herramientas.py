@@ -7,6 +7,7 @@ import httpx
 
 RUTA_PROYECCION = Path(__file__).resolve().parent.parent / "reports" / "proyeccion_costos_equipos.csv"
 RUTA_MODELO = Path(__file__).resolve().parent.parent / "reports" / "resultados_modelo.json"
+ULTIMAS_NOTICIAS = []
 
 def consultar_proyeccion(equipo: str) -> str:
     """Devuelve la proyección de costo a 6 meses de un equipo ('Equipo 1' o 'Equipo 2'),
@@ -40,7 +41,7 @@ def consultar_modelo(equipo: str) -> str:
 
 def buscar_contexto_mercado(tema: str, cantidad: int = 5) -> str:
     """Busca en Google News las noticias más recientes sobre un tema de mercado
-    (por ejemplo, 'precio del petróleo' o 'materias primas') y devuelve título, medio, fecha y enlace."""
+    (por ejemplo, 'precio del petróleo' o 'materias primas') y devuelve título, medio y fecha."""
     url = f"https://news.google.com/rss/search?q={quote_plus(tema)}&hl=es-419&gl=CO&ceid=CO:es-419"
 
     try:
@@ -56,6 +57,8 @@ def buscar_contexto_mercado(tema: str, cantidad: int = 5) -> str:
     noticias = []
     for entrada in feed.entries[:cantidad]:
         medio = entrada.get("source", {}).get("title", "Medio desconocido")
-        noticias.append(f"- {entrada.title} ({medio}, {entrada.get('published', 'sin fecha')})\n  {entrada.link}")
+        fecha = entrada.get("published", "sin fecha")
+        ULTIMAS_NOTICIAS.append({"titulo": entrada.title, "medio": medio, "enlace": entrada.link})
+        noticias.append(f"- {entrada.title} ({medio}, {fecha})")
 
     return f"Noticias recientes sobre '{tema}':\n" + "\n".join(noticias)
