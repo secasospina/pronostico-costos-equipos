@@ -15,22 +15,22 @@ El análisis completo está en el **[informe](reports/informe.md)**.
 
 | Pregunta | Resultado |
 |---|---|
-| ¿Qué explica el Equipo 1? | X (20%) e Y (80%). **Z es ruido** (p-valor 0,999) |
-| ¿Qué explica el Equipo 2? | X, Y y Z casi en partes iguales (un tercio cada una). Ninguna es ruido |
+| ¿Qué explica el Equipo 1? | X e Y, con receta ≈ 0,2·X + 0,8·Y. Por sus precios, **Y aporta cerca del 97% del precio**. **Z es ruido** (p-valor 0,999) |
+| ¿Qué explica el Equipo 2? | X, Y y Z, con receta ≈ promedio simple de las tres. Por sus precios, **Z aporta cerca del 76%**, Y el 21% y X el 3%. Ninguna es ruido |
 | Precisión del modelo de relación | Error promedio (MAPE) de 1,5% en datos de 2022-2023 que el modelo no vio |
-| Horizonte de proyección | 6 meses, con actualización mensual: hasta el mes 6 el error se mantiene por debajo de 15% y desde el mes 7 se dispara |
-| Validación con datos reales | La proyección de X tuvo 6,83% de error frente a los precios reales, siempre dentro del intervalo de confianza |
+| Horizonte de proyección | 6 meses, con actualización mensual: hasta el mes 6 el error se mantiene controlado (máximo 15,7%) y desde el mes 7 se dispara (hasta 48% en X) |
+| Validación con datos reales | La proyección de X tuvo 6,83% de error frente a los precios reales, siempre dentro del intervalo de predicción |
 
-**Proyección del costo (septiembre 2023 a febrero 2024):**
+**Proyección del costo (septiembre 2023 a febrero 2024)**, con un escenario esperado y un rango conservador (escenarios bajo y alto):
 
-| Mes | Equipo 1 esperado | Rango Equipo 1 | Equipo 2 esperado | Rango Equipo 2 |
+| Mes | Equipo 1 esperado | Equipo 1 bajo a alto | Equipo 2 esperado | Equipo 2 bajo a alto |
 |---|---|---|---|---|
-| Sep 2023 | 460 | 410 a 511 | 926 | 840 a 1.011 |
-| Oct 2023 | 448 | 376 a 519 | 921 | 794 a 1.048 |
-| Nov 2023 | 439 | 351 a 526 | 908 | 746 a 1.070 |
-| Dic 2023 | 450 | 349 a 551 | 914 | 720 a 1.107 |
-| Ene 2024 | 459 | 346 a 572 | 930 | 708 a 1.152 |
-| Feb 2024 | 467 | 343 a 591 | 938 | 689 a 1.187 |
+| Sep 2023 | 459 | 406 a 512 | 923 | 834 a 1.013 |
+| Oct 2023 | 448 | 373 a 522 | 921 | 788 a 1.053 |
+| Nov 2023 | 440 | 348 a 532 | 909 | 740 a 1.078 |
+| Dic 2023 | 451 | 345 a 558 | 916 | 714 a 1.118 |
+| Ene 2024 | 460 | 341 a 579 | 932 | 700 a 1.165 |
+| Feb 2024 | 469 | 338 a 599 | 940 | 680 a 1.201 |
 
 ![Proyección del costo de los equipos](reports/figures/06_proyeccion_equipos.png)
 

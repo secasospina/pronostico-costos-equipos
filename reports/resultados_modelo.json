@@ -13,6 +13,11 @@
       "Price_X": 0.0,
       "Price_Y": 0.0,
       "Price_Z": 0.9989
+    },
+    "aporte_porcentual": {
+      "Price_X": 3.4,
+      "Price_Y": 96.6,
+      "Price_Z": 0.0
     }
   },
   "Equipo 2": {
@@ -29,6 +34,11 @@
       "Price_X": 0.0,
       "Price_Y": 0.0,
       "Price_Z": 0.0
+    },
+    "aporte_porcentual": {
+      "Price_X": 2.9,
+      "Price_Y": 21.0,
+      "Price_Z": 75.9
     }
   }
 }

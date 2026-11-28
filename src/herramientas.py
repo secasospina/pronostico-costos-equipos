@@ -21,7 +21,7 @@ def consultar_proyeccion(equipo: str) -> str:
 
 def consultar_modelo(equipo: str) -> str:
     """Explica de qué materias primas depende el precio de un equipo ('Equipo 1' o 'Equipo 2'):
-    el peso de cada una, si es significativa o ruido, el R² y el error de validación."""
+    el coeficiente y el aporte porcentual al precio de cada una, si es significativa o ruido, el R² y el error de validación."""
     with open(RUTA_MODELO, encoding="utf-8") as archivo:
         resultados = json.load(archivo)
 
@@ -33,8 +33,9 @@ def consultar_modelo(equipo: str) -> str:
     for materia in ["Price_X", "Price_Y", "Price_Z"]:
         coeficiente = datos["coeficientes"][materia]
         p_valor = datos["p_valores"][materia]
+        aporte = datos["aporte_porcentual"][materia]
         estado = "influye" if p_valor < 0.05 else "es ruido"
-        lineas.append(f"- {materia}: peso {coeficiente}, p-valor {p_valor} → {estado}")
+        lineas.append(f"- {materia}: coeficiente {coeficiente}, aporte al precio {aporte}%, p-valor {p_valor} → {estado}")
     lineas.append(f"R²: {datos['r2']} | Error de validación (MAPE): {datos['mape_validacion']:.2%}")
 
     return "\n".join(lineas)
