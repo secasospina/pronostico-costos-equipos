@@ -78,6 +78,7 @@ Primero, la diferencia entre una IA convencional y un agente:
 
 | Característica | Qué significa | En el agente de este proyecto |
 |---|---|---|
+| Percepción | Recibe información de su entorno | Lee la pregunta del usuario y los titulares de noticias recientes |
 | Autonomía | Decide solo qué pasos seguir | Según la pregunta, elige qué herramienta usar |
 | Uso de herramientas | Ejecuta funciones externas | Consulta la proyección, el modelo y las noticias |
 | Memoria | Recuerda lo que se habló | Mantiene el contexto de la conversación |
@@ -97,7 +98,7 @@ Las decisiones técnicas fueron estas:
 |---|---|---|
 | Modelo de lenguaje | Gemini (gemini-3.5-flash-lite, con gemini-3.1-flash-lite de respaldo) | Plan gratuito, soporta function calling y respondió de forma rápida y estable; el modelo flash llegó a tardar hasta 59 segundos por saturación |
 | Herramientas | `consultar_proyeccion`, `consultar_modelo` y `buscar_contexto_mercado` | Las dos primeras leen los resultados guardados en `reports/`; la tercera busca noticias recientes en Google News |
-| Noticias | Feed RSS de Google News | La búsqueda integrada de Gemini no está disponible en el plan gratuito |
+| Noticias | Feed RSS de Google News (titulares, medio y fecha) | La búsqueda integrada de Gemini no está disponible en el plan gratuito; el agente trabaja con los titulares, no con el texto completo de los artículos |
 | Interfaz | Chat en Streamlit (`app.py`) | Permite probar el agente desde el navegador, con las fuentes consultadas y sus enlaces |
 | Robustez | Reintentos ante errores temporales (429, 500, 503) y modelo de respaldo | El agente sigue respondiendo aunque el servicio se sature |
 | Seguridad | API key en un archivo `.env` ignorado por git | La clave nunca se sube al repositorio |
@@ -204,7 +205,9 @@ Para saber si el modelo de verdad funcionaba con datos que no había visto, lo e
 
 ![Validación: real frente a modelo](figures/03_validacion_real_vs_modelo.png)
 
-En los dos equipos el error promedio fue de 1,5%. El MAE del Equipo 2 es el doble solo porque su precio también es el doble. Ya validado, volví a entrenar los modelos con todo el histórico para hacer la proyección.
+En los dos equipos el error promedio fue de 1,5%. El MAE del Equipo 2 es el doble solo porque su precio también es el doble.
+
+También revisé que la regresión no tuviera problemas que la hicieran engañosa. El estadístico de Durbin-Watson es de 1,96 en el Equipo 1 y 2,04 en el Equipo 2 (cercano a 2, sin autocorrelación fuerte en los residuos), y el factor de inflación de la varianza (VIF) de X, Y y Z es de 1,34, 3,61 y 3,54, muy por debajo del umbral habitual de 10, así que la correlación entre Y y Z no impide separar sus efectos. La advertencia de número de condición que muestra statsmodels se debe a la diferencia de escala entre las variables. Ya validado, volví a entrenar los modelos con todo el histórico para hacer la proyección.
 
 ### 4.4 Selección del método de pronóstico
 
@@ -226,9 +229,9 @@ Ningún método gana siempre, así que escogí uno para cada materia prima. En X
 
 | Pregunta | Resultado |
 |---|---|
-| "¿Cuánto costará el Equipo 2 en diciembre de 2023?" | Respondió con el valor esperado y el rango de diciembre, tomados del archivo de proyección: datos correctos |
-| "¿Y el otro equipo?" | Entendió que se refería al Equipo 1 en diciembre y respondió con sus valores. La memoria funciona |
-| "¿Qué está pasando con el petróleo y cómo afecta los costos?" | Buscó noticias del día, citó los medios, las relacionó con X como hipótesis y aclaró la diferencia entre la fecha de las noticias y la de la proyección |
+| "¿Cuánto costará el Equipo 2 en diciembre de 2023?" | 916,21 (escenario bajo 714,30 y alto 1.118,11), igual al archivo de proyección. Aclaró que la incertidumbre crece con los meses |
+| "¿Y el otro equipo?" | Entendió que se refería al Equipo 1 en diciembre: 451,42 (escenario bajo 345,15 y alto 557,69), y explicó que el rango es conservador. La memoria funciona |
+| "¿Qué está pasando con el precio del petróleo y cómo podría afectar estos costos?" | Buscó noticias del día y citó los medios. Relacionó X con el Brent como hipótesis, dijo que X aporta cerca del 3% del precio en ambos equipos (impacto acotado) y aclaró que las noticias son actuales mientras la proyección es de septiembre de 2023 a febrero de 2024 |
 
 Cuando usa herramientas, el agente tardó como máximo 3,8 segundos en responder. En el camino tuve que corregir varias cosas: respuestas con datos imprecisos (reforcé las instrucciones), errores de certificados al consultar las noticias (cambié a `httpx`) y enlaces que el modelo alteraba (ahora los enlaces se muestran directamente desde la herramienta, en "Fuentes consultadas").
 
@@ -255,7 +258,7 @@ No quise escoger el horizonte a ojo, así que medí el error del método elegido
 
 ![Error según los meses proyectados](figures/05_error_por_horizonte.png)
 
-Hasta el mes 6 el error crece, pero de forma controlada (el máximo es 15,7%, en X en el mes 5). Desde el mes 7 se dispara, sobre todo en X, que salta de 14,7% a 38%. Buscando qué pasó en esas fechas, encontré que los errores más grandes coinciden con dos eventos del mercado:
+Hasta el mes 6 el error crece, pero de forma controlada (el máximo es 15,7%, en X en el mes 5). Desde el mes 7 aumenta de forma marcada, sobre todo en X, que salta de 14,7% a 38%, en buena parte por el evento de 2020. Buscando qué pasó en esas fechas, encontré que los errores más grandes coinciden con dos eventos del mercado:
 
 | Evento | Qué pasó | Cómo se ve en los datos |
 |---|---|---|
@@ -276,7 +279,7 @@ Lo dejo como hipótesis, porque el caso no lo confirma. Si la empresa lo confirm
 
 Proyecté cada materia prima 6 meses (de septiembre de 2023 a febrero de 2024) con el método que le correspondía, reentrenado con todo el histórico mensual y con intervalos de predicción del 95%. Los intervalos se van abriendo mes a mes: entre más lejos, más incertidumbre.
 
-Como el archivo de X llega hasta abril de 2024, pude comparar su proyección con lo que realmente pasó. El error fue de 6,83%, dentro de lo esperado según la tabla de error por horizonte (entre 7,5% y 15,7% en los primeros 6 meses), y el precio real quedó dentro del intervalo de predicción en los 6 meses. Es una buena señal de que los intervalos son razonables, aunque seis meses de una sola ventana no alcanzan para confirmarlo del todo.
+Como el archivo de X llega hasta abril de 2024, pude comparar su proyección con lo que realmente pasó. El error fue de 6,83%, incluso por debajo de lo esperado: según la tabla de error por horizonte, el error promedio de X en los primeros 6 meses es de 11,3%. Además, el precio real quedó dentro del intervalo de predicción en los 6 meses. Es una buena señal de que los intervalos son razonables, aunque seis meses de una sola ventana no alcanzan para confirmarlo del todo.
 
 Esta comparación es solo una validación. Para la proyección oficial de los equipos usé X proyectada, porque en agosto de 2023 esos precios todavía no se conocían; usar los reales sería hacer trampa con información del futuro.
 
@@ -300,6 +303,7 @@ Algunas cosas que se ven en la proyección:
 - El costo esperado del Equipo 1 baja un poco en octubre y noviembre por la estacionalidad de Y. La diferencia es pequeña comparada con el rango, así que lo veo como una oportunidad para estar pendientes, no como algo seguro.
 - El Equipo 2 se mantiene más estable, porque combina las tres materias primas y Z, que es la que más pesa, es también la más estable.
 - El rango es conservador, porque supone que X, Y y Z llegan a su extremo al mismo tiempo. Es más amplio que un intervalo estadístico, pero es más seguro para presupuestar.
+- El rango solo tiene en cuenta la incertidumbre de las materias primas, no el error propio de la receta. Lo medí y es muy pequeño: la desviación de los residuos mensuales es de 1,8 en el Equipo 1 y 2,7 en el Equipo 2, frente a rangos de más de 100.
 
 Mi recomendación para la empresa es planear con el valor esperado, usar el escenario alto como tope del presupuesto (o guardar la diferencia como contingencia) y actualizar la proyección cada mes. Por ejemplo: *"Para febrero de 2024, el Equipo 1 costará alrededor de 469; el presupuesto no debería superar 599."*
 
